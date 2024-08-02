@@ -1,0 +1,211 @@
+\documentclass{article}
+\usepackage{graphicx} 
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc} 
+\usepackage{tabularx} 
+\usepackage{geometry} 
+\usepackage{siunitx} 
+\usepackage{caption}
+\usepackage{amsmath} 
+\usepackage{float}
+\usepackage{array} 
+\captionsetup[figure]{labelformat=empty} 
+\usepackage{placeins}
+\usepackage{xcolor}
+\usepackage{multicol}
+\usepackage{fancyhdr,lastpage}
+\usepackage{fancyvrb}
+\usepackage{titling}
+\usepackage{titlesec}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\pagestyle{fancy}
+\newgeometry{tmargin=4cm, bmargin=4cm, lmargin=4cm, rmargin=4cm}
+\large %wielkosc czcionki
+
+\begin{document}
+\Large
+
+% Jak chcesz to dopisuj i usuwaj co chcesz, idk czy to tak ma byc w sumieXD
+
+\title{\LARGE Dokumentacja projektu z przedmiotu "Podstawy Grafiki Komputerowej" \\
+       \Large Labirynt 3D}
+\author{Helena Jońca \and Julia Przeździk}
+\date{12 czerwca 2024 r.}
+\maketitle
+
+\rhead{\small{Labirynt 3D w C++}}
+\lhead{\small{Podstawy Grafiki Komputerowej}}
+\cfoot{Strona \thepage\ z \pageref{LastPage}} 
+
+\normalsize
+\section{Tytuł i autorzy projektu}
+W ramach zajęć z przedmiotu "Podstawy Grafiki Komputerowej" zrealizowałyśmy projekt pod tytułem "Labirynt 3D". Poniżej przedstawiono autorów projektu oraz ich zakres obowiązków:
+
+\begin{itemize}
+    \item \textbf{Julia Przeździk} Przygotowanie środowiska programistycznego oraz środowiska do testów jednostkowych, implementacja kluczowych klas odpowiedzialnych za mechanikę labiryntu, opracowanie i optymalizacja algorytmów renderowania 3D, przygotowanie dokumentacji.
+    \item \textbf{Helena Jońca} Projektowanie koncepcji oraz implementacja funkcjonalności związanych z ruchem i kolizją gracza, opracowanie algorytmów obliczeniowych używanych w programie, integracja i testowanie tych algorytmów w środowisku programistycznym, przygotowanie dokumentacji.
+\end{itemize}
+
+\section{Opis projektu}
+Projekt polega na stworzeniu programu mierzącego czas potrzebny użytkownikowi na przebycie trójwymiarowego labiryntu. Program wczytuje mapę labiryntu z pliku tekstowego, a następnie renderuje widok z perspektywy pierwszej osoby (FPP). Sterowanie odbywa się za pomocą klawiszy strzałek, a celem jest dotarcie do wyjścia z labiryntu.
+
+\section{Założenia wstępne przyjęte w realizacji projektu}
+\begin{itemize}
+    \item Labirynt składa się z prostokątnych segmentów ścian.
+    \item Ściany są do siebie prostopadłe.
+    \item Plik mapy zawiera wymiary labiryntu w pierwszej linii, a następne linie zawierają jego strukturę.
+    \item Gracz zaczyna w miejscu oznaczonym jako 's' i kończy grę dotykając wyjścia oznaczonego jako 'E'.
+\end{itemize}
+
+\subsection{Wymagania podstawowe}
+Program powinien wczytywać z pliku tekstowego mapę labiryntu, która następnie zostanie wyświetlona na ekranie w trybie widoku z pierwszej osoby (FPP). Gracz powinien mieć możliwość poruszania się po labiryncie przy użyciu klawiszy strzałek na klawiaturze. Celem gry jest dotarcie do wyjścia z labiryntu, oznaczonego specjalnym znakiem na mapie.
+
+\subsection{Wymagania rozszerzone}
+W wersji rozszerzonej program powinien umożliwiać graczowi wybór pola widzenia (FOV) w zakresie od 45 do 120 stopni. Dodatkowo, naciśnięcie klawisza „Shift” powinno zwiększać szybkość poruszania się gracza dwukrotnie. Gracz powinien mieć również możliwość przełączenia widoku na rzut z góry, w którym labirynt jest przedstawiony jako mapa 2D, a gracz jako punkt.
+
+\section{Specyfikacja danych wejściowych}
+
+Format pliku tekstowego labiryntu:
+\begin{itemize}
+    \item Pierwsza linia zawiera dwie liczby całkowite oddzielone przecinkiem, określające szerokość i wysokość labiryntu.
+    \item Kolejne linie reprezentują labirynt, gdzie:
+    \textbf X oznacza ścianę,
+    \textbf{(spacja)} oznacza drogę,
+    \textbf{s} oznacza punkt startowy,
+    \textbf{E} oznacza punkt końcowy.
+\end{itemize}
+
+\section{Opis oczekiwanych danych wyjściowych}
+\begin{itemize}
+    \item Program wyświetla trójwymiarowy labirynt na ekranie.
+    \item Po dotarciu do punktu końcowego (E), program wyświetla czas potrzebny na przejście labiryntu.
+\end{itemize}
+
+\section{Zdefiniowanie struktur danych}
+\textbf{Struktura Player} reprezentująca gracza i przechowująca wszystkie kluczowe informacje dotyczące jego położenia czy orientacji w labiryncie.
+\begin{itemize}
+    \item \textbf{float pos\_x, pos\_y} – pozycja gracza na osi X i Y 
+    \item \textbf{float angle} – kąt orientacji gracza w radianach
+    \item \textbf{float speed} – szybkość poruszania się gracza po labiryncie
+    \item \textbf{float turnSpeed} – prędkość obrotu gracza, czyli zmiana kąta na jednostkę czasu
+    \item \textbf{bool isRunning} – flaga sprawdzająca, czy gracz biegnie (po wciśnięciu przycisku "Shift").
+\end{itemize}
+
+\noindent
+\textbf{Klasa Maze3D} 
+\begin{itemize}
+    \item \textbf{bool keys} - statusy klawiszy: UP, DOWN, LEFT, RIGHT
+    \item \textbf{bool shiftPressed}                  - status klawisza "Shift"
+    \item \textbf{vector Fields} - struktura przechowująca typy pól labiryntu
+    \item \textbf{int width, height} - wymiary labiryntu
+    \item \textbf{Player player} - obiekt gracza
+    \item \textbf{time\_t startTime} - czas rozpoczęcia gry
+    \item \textbf{bool gameEnded} - flaga końca gry
+    \item \textbf{bool FPP} - flaga widoku pierwszoosobowego (First Person Perspective)
+    \item \textbf{ID\_1, ID\_2} - ID dla menu zmiany na widok pierwszoosobowy/widok z góry
+\end{itemize}
+\noindent
+
+Dokładny opis funkcji i klas znajduje się w folderze html. 
+
+\section{Specyfikacja interfejsu użytkownika}
+Użytkownik rozpoczyna rozgrywkę od punktu s, czyli startu labiryntu. Gracz steruje postacią za pomocą klawiszy strzałek (góra, dół, lewo, prawo). Klawisz "Shift" zwiększa prędkość poruszania się. Po zakończeniu gry (dotarciu do punktu E), gra kończy się, a użytkownikowi wyświetlany jest czas przejścia labiryntu.
+
+\section{Wyodrębnienie i zdefiniowanie zadań}
+\begin{itemize}
+    \item \textbf{Moduł wczytywania labiryntu:} Wczytuje labirynt z pliku tekstowego
+    \item \textbf{Moduł sterowania graczem: } Odpowiada za poruszanie się gracza oraz obsługę klawiatury.
+    \item \textbf{Moduł renderowania: } Wyświetla labirynt oraz gracza na ekranie.
+    \item \textbf{Moduł logiki gry: } Zarządza stanem gry, mierzy czas i sprawdza, czy gracz dotarł do końca labiryntu.
+\end{itemize}
+
+\section{Decyzja o wyborze narzędzi programistycznych}
+\begin{itemize}
+    \item \textbf{Język programowania:} C++
+    \item \textbf{Kompilator:} g++
+    \item \textbf{Środowisko programistyczne:} Visual Studio Code
+    \item \textbf{Biblioteka graficzna:} wxWidgets
+\end{itemize}
+
+\section{Analiza czasowa}
+\begin{itemize}
+    \item \textbf{Wczytywanie labiryntu:} 2 dni
+    \item \textbf{Sterowanie graczem:} 2 dni
+    \item \textbf{Renderowanie grafiki:} 2 dni
+    \item \textbf{Logika gry i testowanie:} 3 dni
+    \item \textbf{Dokumentacja i finalizacja projektu:} 1 dzień
+\end{itemize}
+
+\section{Opracowanie i opis niezbędnych algorytmów}
+\begin{itemize}
+    \item \textbf{Algorytm wczytywania labiryntu:} Wczytuje dane z pliku tekstowego i przechowuje je w wektorze stringów.
+    \item \textbf{Algorytm sterowania graczem:} Obsługuje wciśnięcia klawiszy i odpowiednio zmienia pozycję oraz kąt położenia gracza.
+    \item \textbf{Algorytm renderowania:} Renderuje trójwymiarowy widok labiryntu oraz pozycję gracza.
+\end{itemize}
+
+
+\section{Kodowanie} 
+\textbf{Schemat blokowy: }
+\\
+Wczytywanie labiryntu -> Inicjalizacja wxWidgets -> Tworzenie głównego okna -> Pętla główna aplikacji -> Renderowanie labiryntu i gracza -> Obsługa zdarzeń (np. naciśnięcia klawiszy) -> Aktualizacja pozycji gracza -> Sprawdzenie, czy gracz dotarł do mety -> Zakończenie aplikacji
+
+Dokładny opis klas i funkcji został wygenerowany w postaci folderu HTML za pomocą Doxygen.
+\section{Testowanie}
+
+\subsection{Przygotowanie zestawów danych testowych}
+Aby przeprowadzić skuteczne testowanie, przygotowałyśmy różne zestawy danych testowych, które obejmują labirynty o różnorodnych układach i poziomach trudności. Zestawy te mają na celu sprawdzenie poprawności działania programu w różnych scenariuszach:
+\begin{itemize}
+    \item \textbf{Proste labirynty:} Małe labirynty, które służą do testowania podstawowych funkcji programu, takich jak wczytywanie danych, podstawowe sterowanie i renderowanie.
+    \item \textbf{Złożone labirynty:} Większe labirynty z wieloma zakrętami i ślepymi uliczkami, które pozwalają na testowanie bardziej złożonych scenariuszy, w tym wydajności renderowania i poprawności logiki gry.
+    \item \textbf{Specjalne przypadki:} Labirynty z nietypowymi układami, takimi jak brak punktu startowego, brak punktu końcowego, czy całkowicie zamknięte przestrzenie, które pomagają w identyfikacji potencjalnych błędów i wyjątków.
+\end{itemize}
+
+\subsection{Testowanie niezależnych modułów}
+Każdy z modułów systemu został przez nas przetestowany niezależnie, aby upewnić się, że działa on poprawnie przed integracją z innymi modułami:
+\begin{itemize}
+    \item \textbf{Wczytywanie labiryntu:} Testy weryfikujące poprawność odczytu danych z pliku tekstowego i ich prawidłowe przechowywanie w strukturze danych. Przeprowadziłyśmy testy z różnymi formatami plików, w tym z poprawnymi i błędnymi danymi.
+    \item \textbf{Sterowanie graczem: }Testy sprawdzające reakcję na wciśnięcia klawiszy strzałek i klawisza Shift. Sprawdzano, czy gracz porusza się w odpowiednim kierunku i z odpowiednią prędkością.
+    \item \textbf{Rednderowanie:} Testy weryfikujące poprawność wyświetlania labiryntu i gracza. Sprawdziłyśmy, czy elementy graficzne są renderowane w odpowiednich miejscach i czy zachowana jest płynność animacji.
+\end{itemize}
+
+\subsection{Testowanie powiązań modułów:} Po przetestowaniu niezależnych modułów, przeprowadzono testy integracyjne, aby upewnić się, że moduły poprawnie współpracują ze sobą:
+\begin{itemize}
+    \item \textbf{Integracja wczytywania i renderowania:} Sprawdziłyśmy, czy labirynt wczytany z pliku jest poprawnie wyświetlany na ekranie.
+    \item \textbf{Integracja sterowania i renderowania:} Zweryfikowałyśmy, czy sterowanie graczem powoduje odpowiednie zmiany w wyświetlaniu jego pozycji na ekranie.
+    \item \textbf{Integracja logiki gry:} Sprawdziłyśmy, czy zmiany w stanie gry (np. dotarcie do punktu końcowego) są poprawnie obsługiwane i wyświetlane.
+\end{itemize}
+
+\subsection{Testy całościowe}
+Ostateczne testy przeprowadziłyśmy na całym systemie, wykorzystując przygotowane zestawy danych testowych. Testy te miały na celu weryfikację, czy cały system działa zgodnie z oczekiwaniami w różnych scenariuszach użytkowania:
+\begin{itemize}
+    \item \textbf{Testy funkcjonalne:} Sprawdziłyśmy, czy wszystkie funkcje programu działają poprawnie, w tym wczytywanie labiryntu, sterowanie graczem, renderowanie i mierzenie czasu przejścia labiryntu.
+    \item \textbf{Testy wydajnościowe:} Oceniły wydajność programu przy różnych rozmiarach labiryntu, sprawdzając płynność animacji i szybkość reakcji na sterowanie.
+    \item \textbf{Testy użyteczności:} Przeprowadziłyśmy testy użyteczności, aby ocenić łatwość obsługi programu przez użytkowników, w tym intuicyjność sterowania i czytelność interfejsu.
+\end{itemize}
+
+\section{Wdrożenie, raport i wnioski}
+\subsection{Wyniki testów i realizacja założeń}
+\textbf{Realizacja funkcji:} 
+\begin{itemize}
+    \item Wszystkie założone funkcje zostały zrealizowane zgodnie z wymaganiami projektowymi.
+    \item Gracz może poruszać się po trójwymiarowym labiryncie, sterując za pomocą klawiszy strzałek oraz klawisza "Shift".
+    \item Czas przejścia labiryntu jest mierzony i wyświetlany na końcu gry.
+\end{itemize}
+\textbf{Poprawność działania:}
+    \begin{itemize}
+        \item Gra działa poprawnie w różnych scenariuszach testowych, zarówno z prostymi, jak i złożonymi labiryntami.
+        \item Wczytywanie labiryntu z pliku tekstowego działa bez błędów, a dane są prawidłowo interpretowane.
+        \item Renderowanie trójwymiarowego labiryntu jest płynne, a sterowanie graczem jest intuicyjne i reaguje na wszystkie wciśnięcia klawiszy.
+    \end{itemize}
+\textbf{Stabilność i wydajność:}
+\begin{itemize}
+    \item Gra działa stabilnie bez niespodziewanych zamknięć czy zawieszeń.
+    \item Wydajność renderowania jest zadowalająca nawet w większych i bardziej złożonych labiryntach.
+\end{itemize}
+
+\subsection{Wnioski}
+Projekt trójwymiarowego labiryntu został pomyślnie zrealizowany, spełniając wszystkie założone cele i wymagania. Gra działa poprawnie, oferując płynne i intuicyjne sterowanie oraz prawidłowe renderowanie labiryntu. Testy wykazały stabilność i wydajność programu. 
+
+
+\end{document}
